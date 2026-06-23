@@ -1,0 +1,72 @@
+.env
+**/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.bak
+
+# Terraform generated outputs
+outputs-*.json
+
+# Terraform local state / working dirs
+**/.terraform/
+**/.terraform/*
+*.tfplan
+tfplan
+# Terraform backups / editor leftovers
+*.bak
+*.bak2
+*~
+.DS_Store
+# Generated outputs
+outputs-*.json
+
+# Terraform local artifacts
+**/.terraform/
+**/.terraform/*
+*.tfplan
+tfplan
+# editor / backup files
+*.bak
+*.bak2
+*~
+.DS_Store
+# Generated outputs
+outputs-*.json
+
+# Java / Maven
+**/target/
+*.class
+*.log
+
+# Terraform local
+**/.terraform/
+*.tfplan
+.terraform.lock.hcl
+
+# macOS
+.DS_Store
+
+# Maven
+**/target/
+target/
+**/target/
+**/target/
+docker-compose.gcp.yml

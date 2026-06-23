@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: service-template
+          uri: ${SERVICE_TEMPLATE_URL:http://localhost:8081}
+          predicates:
+            - Path=/svc-template/** 
+          filters:
+            - StripPrefix=1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Global Credit Passport — Milestone 1 Flow Diagrams</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --border:#2d3748;
+    --text:#e6edf3; --muted:#9aa7b8; --accent:#58a6ff; --accent2:#3fb950;
+    --warn:#d29922; --pink:#db61a2;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+  }
+  header{
+    padding:38px 24px 28px; text-align:center;
+    background:radial-gradient(1200px 400px at 50% -120px,#1f6feb33,transparent),var(--panel);
+    border-bottom:1px solid var(--border);
+  }
+  header .eyebrow{color:var(--accent);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+  header h1{margin:8px 0 6px;font-size:30px}
+  header p{margin:0;color:var(--muted);max-width:760px;margin-inline:auto}
+  .layout{display:flex;gap:0;align-items:flex-start}
+  nav{
+    position:sticky;top:0;align-self:flex-start;width:250px;flex:none;
+    height:100vh;overflow:auto;padding:22px 16px;border-right:1px solid var(--border);
+    background:var(--panel);
+  }
+  nav h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 10px}
+  nav a{
+    display:block;color:var(--text);text-decoration:none;padding:8px 12px;border-radius:8px;
+    font-size:14px;margin-bottom:3px;border:1px solid transparent;
+  }
+  nav a:hover{background:var(--panel2);border-color:var(--border);color:var(--accent)}
+  main{flex:1;min-width:0;padding:30px 32px 80px;max-width:1100px;margin-inline:auto}
+  section{
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;
+    padding:24px 26px;margin-bottom:30px;scroll-margin-top:16px;
+  }
+  section h2{margin:0 0 4px;font-size:21px;display:flex;align-items:center;gap:10px}
+  section h2 .num{
+    display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;
+    background:var(--accent);color:#04101f;font-size:14px;font-weight:700;flex:none;
+  }
+  section .desc{color:var(--muted);margin:0 0 18px;font-size:15px}
+  .diagram{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:18px;overflow:auto}
+  .mermaid{display:flex;justify-content:center}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:13px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:30px;border-top:1px solid var(--border)}
+  code{background:#0b1622;border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px;color:var(--accent)}
+  @media(max-width:880px){nav{display:none}main{padding:20px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Black Cube Technologies · GCP-M1-AGREE-2026</div>
+  <h1>Global Credit Passport — Milestone 1</h1>
+  <p>Lender-ready pilot demo flow diagrams. Borrower intake → provider-native data normalization → AI-assisted explainable risk translation → lender review &amp; outputs (dashboard, API/JSON, PDF, audit).</p>
+</header>
+
+<div class="layout">
+  <nav>
+    <h3>Flows</h3>
+    <a href="#overview">1 · System Overview</a>
+    <a href="#story">2 · End-to-End Sequence</a>
+    <a href="#borrower">3 · Borrower Intake Flow</a>
+    <a href="#providers">4 · Provider &amp; Data Architecture</a>
+    <a href="#risk">5 · Risk Translation Logic</a>
+    <a href="#lender">6 · Lender Review Flow</a>
+    <a href="#outputs">7 · Outputs &amp; Audit</a>
+    <a href="#scenarios">8 · Demo Scenarios</a>
+  </nav>
+
+  <main>
+    <!-- 1 -->
+    <section id="overview">
+      <h2><span class="num">1</span> System Overview</h2>
+      <p class="desc">The three actors and how data moves: Admin seeds one lender, the borrower applies through a lender-specific link, the engine produces an explainable risk result, and the lender reviews it.</p>
+      <div class="diagram"><pre class="mermaid">
+flowchart LR
+  subgraph ADMIN["🛠️ Admin / Seed"]
+    A1["Seed one demo lender<br/>+ demo data (config)"]
+  end
+  subgraph BORROWER["👤 Borrower (no login)"]
+    B1["Open lender link<br/>/apply/abc-fintech"]
+    B2["Complete intake<br/>+ consent + docs"]
+  end
+  subgraph ENGINE["⚙️ GCP Engine"]
+    E1["Map to lender"]
+    E2["Normalize provider data<br/>(sandbox adapters)"]
+    E3["AI-assisted explainable<br/>risk translation"]
+  end
+  subgraph LENDER["🏦 Lender (login)"]
+    L1["Applicant list"]
+    L2["Applicant detail<br/>+ risk output"]
+    L3["PDF · API/JSON · Audit"]
+  end
+  A1 --> B1 --> B2 --> E1 --> E2 --> E3 --> L1 --> L2 --> L3
+  classDef admin fill:#3a2d12,stroke:#d29922,color:#fff;
+  classDef borrower fill:#10331f,stroke:#3fb950,color:#fff;
+  classDef engine fill:#1c2742,stroke:#58a6ff,color:#fff;
+  classDef lender fill:#33203a,stroke:#db61a2,color:#fff;
+  class A1 admin; class B1,B2 borrower; class E1,E2,E3 engine; class L1,L2,L3 lender;
+      </pre></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#d29922"></i>Admin / Seed</span>
+        <span><i class="dot" style="background:#3fb950"></i>Borrower</span>
+        <span><i class="dot" style="background:#58a6ff"></i>GCP Engine</span>
+        <span><i class="dot" style="background:#db61a2"></i>Lender</span>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="story">
+      <h2><span class="num">2</span> End-to-End Sequence (User Story)</h2>
+      <p class="desc">Time-ordered interaction between actors and the system, from link generation to the lender using the demo in a validation conversation.</p>
+      <div class="diagram"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  actor Admin
+  actor Borrower
+  participant Sys as GCP System
+  participant Prov as Sandbox Providers
+  actor Lender
+  Admin->>Sys: Seed demo lender + scenarios
+  Sys-->>Admin: Lender-specific link (/apply/...)
+  Borrower->>Sys: Open lender-branded start screen
+  Borrower->>Sys: Select type/corridor, profile, consent
+  Borrower->>Sys: Enter KYC / financial / supporting data + upload docs
+  Borrower->>Sys: Review & Submit
+  Sys->>Prov: Request normalized data (sandbox)
+  Prov-->>Sys: KYC / bureau / income / supporting signals
+  Sys->>Sys: Confidence scoring + risk band + reason codes
+  Sys-->>Borrower: Submission confirmation
+  Lender->>Sys: Login (role-based)
+  Lender->>Sys: Open applicant detail
+  Sys-->>Lender: Risk band, confidence, factors, flags, next step
+  Lender->>Sys: Download PDF / view audit / add notes
+      </pre></div>
+    </section>
+
+    <!-- 3 -->
+    <section id="borrower">
+      <h2><span class="num">3</span> Borrower Intake Flow</h2>
+      <p class="desc">Every borrower screen in order, including the conditional business/self-employed branch and document upload. No borrower login required in M1.</p>
+      <div class="diagram"><pre class="mermaid">
+flowchart TD
+  S1["Start Application<br/><small>lender branding + disclaimer</small>"]
+  S2["Borrower Type &amp; Corridor<br/><small>e.g. India → US</small>"]
+  S3["Basic Profile<br/><small>name, DOB, contact, countries</small>"]
+  S4["Consent &amp; Disclosure<br/><small>version + categories + timestamp</small>"]
+  S5["Identity / KYC Input<br/><small>sandbox KYC status</small>"]
+  S6["Financial Details<br/><small>income, employment, cash-flow</small>"]
+  Q{"Business or<br/>self-employed?"}
+  S7["Business / Self-Employed<br/><small>registration, revenue, tax/GST</small>"]
+  S8["Supporting Data<br/><small>rent, utility, telecom</small>"]
+  S9["Data Source Selection / Status<br/><small>available · missing · doc-supported</small>"]
+  S10["Document Upload<br/><small>upload + tag</small>"]
+  S11["Review &amp; Submit"]
+  S12["Submission Confirmation"]
+  S1-->S2-->S3-->S4-->S5-->S6-->Q
+  Q-- Yes -->S7-->S8
+  Q-- No -->S8
+  S8-->S9-->S10-->S11-->S12
+  S11-. edit .->S3
+  classDef scr fill:#10331f,stroke:#3fb950,color:#fff;
+  classDef dec fill:#3a2d12,stroke:#d29922,color:#fff;
+  class S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12 scr; class Q dec;
+      </pre></div>
+    </section>
+
+    <!-- 4 -->
+    <section id="providers">
+      <h2><span class="num">4</span> Provider Integration &amp; Data Architecture</h2>
+      <p class="desc">Provider-native adapters normalize each source into a provider-neutral GCP schema, preserving lineage, confidence, timestamps and consent. Sandbox-only in M1; live activation is later-phase.</p>
+      <div class="diagram"><pre class="mermaid">
+flowchart LR
+  subgraph SRC["Provider Sources (sandbox)"]
+    P1["Entrust<br/>KYC / Identity"]
+    P2["Experian · Equifax<br/>TransUnion · CIBIL<br/>Bureau"]
+    P3["Plaid · Setu AA<br/>Open Banking"]
+    P4["Truv · Argyle<br/>Employment / Income"]
+    P5["Ocrolus + Uploads<br/>Documents"]
+    <!-- P6["Rent / Utility / Telecom<br/>Supporting"] -->
+  end
+  subgraph ADP["Normalized Adapters / DTOs"]
+    AD["Provider adapters<br/>mapping contracts<br/>source-confidence structs<br/>consent artifacts"]
+  end
+  GCP[("Provider-neutral<br/>GCP Schema<br/><small>+ lineage · confidence · timestamps</small>")]
+  RISK["AI-assisted explainable<br/>risk translation layer"]
+  P1-->AD
+  P2-->AD
+  P3-->AD
+  P4-->AD
+  P5-->AD
+  <!-- P6-->AD -->
+  AD-->GCP-->RISK
+  classDef src fill:#1c2742,stroke:#58a6ff,color:#fff;
+  classDef adp fill:#33203a,stroke:#db61a2,color:#fff;
+  class P1,P2,P3,P4,P5,P6 src; class AD adp;
+      </pre></div>
+      <div class="legend">
+        <span>Live KYC / bureau / open-banking are <b>not activated</b> in M1 — adapters are built &amp; ready for credential plug-in.</span>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="risk">
+      <h2><span class="num">5</span> Risk Translation Logic</h2>
+      <p class="desc">Explainable, rule-based (not ML). Selects a scenario, scores each source's confidence, then derives the risk band, factors, flags, gaps, reason codes and a recommended next step — all versioned.</p>
+      <div class="diagram"><pre class="mermaid">
+flowchart TD
+  IN["Normalized GCP data<br/>+ borrower type / corridor"]
+  SEL["Scenario selection<br/><small>based on type, corridor, source availability</small>"]
+  CONF["Data confidence scoring<br/><small>reliability · verification · freshness ·<br/>consistency · coverage · fraud · relevance</small>"]
+  BAND{"Risk band"}
+  B1["🟢 Low Risk"]
+  B2["🟡 Moderate Risk"]
+  B3["🟠 Elevated Risk"]
+  B4["⚪ Insufficient Data"]
+  OUT["Risk output object"]
+  D1["Overall confidence score/level"]
+  D2["Positive factors"]
+  D3["Risk flags"]
+  D4["Missing-data notes"]
+  D5["Recommended next step"]
+  D6["Reason codes + rule version"]
+  IN-->SEL-->CONF-->BAND
+  BAND-->B1 & B2 & B3 & B4
+  B1 & B2 & B3 & B4 --> OUT
+  OUT-->D1 & D2 & D3 & D4 & D5 & D6
+  NOTE["⚠️ Decision-support only —<br/>does not approve or deny credit"]
+  OUT-.->NOTE
+  classDef eng fill:#1c2742,stroke:#58a6ff,color:#fff;
+  classDef warn fill:#3a2d12,stroke:#d29922,color:#fff;
+  class IN,SEL,CONF,OUT,D1,D2,D3,D4,D5,D6 eng; class NOTE warn;
+      </pre></div>
+    </section>
+
+    <!-- 6 -->
+    <section id="lender">
+      <h2><span class="num">6</span> Lender Review Flow</h2>
+      <p class="desc">Role-based login leads to the applicant list and detail page, where the lender reviews the full risk picture and produces outputs.</p>
+      <div class="diagram"><pre class="mermaid">
+flowchart TD
+  L0["Lender Login<br/><small>role-based / JWT</small>"]
+  L1["Applicant List<br/><small>type · corridor · risk band · confidence · status</small>"]
+  L2["Applicant Detail"]
+  D1["Applicant summary"]
+  D2["Source map"]
+  D3["Risk band + confidence"]
+  D4["Positive factors / risk flags"]
+  D5["Missing notes + next step"]
+  D6["Audit timeline"]
+  A1["Download PDF report"]
+  A2["Add manual notes"]
+  A3["Use in lender validation call"]
+  L0-->L1-->L2
+  L2-->D1 & D2 & D3 & D4 & D5 & D6
+  L2-->A1 & A2 & A3
+  classDef lender fill:#33203a,stroke:#db61a2,color:#fff;
+  class L0,L1,L2,D1,D2,D3,D4,D5,D6,A1,A2,A3 lender;
+      </pre></div>
+    </section>
+
+    <!-- 7 -->
+    <section id="outputs">
+      <h2><span class="num">7</span> Outputs &amp; Audit</h2>
+      <p class="desc">Three deliverable outputs from one risk result, plus the audit log that records consent, sources, rule/report versions and generation events.</p>
+      <div class="diagram"><pre class="mermaid">
+flowchart LR
+  R[("Risk Result")]
+  O1["API / JSON Output<br/><small>borrower id, band, confidence,<br/>source map, factors, flags,<br/>next step, reason codes, versions</small>"]
+  O2["PDF Risk Report<br/><small>profile · exec summary · source map ·<br/>KYC · income · supporting · factors ·<br/>limitations · audit footer</small>"]
+  O3["Lender Dashboard<br/><small>on-screen risk view</small>"]
+  AUD["Audit Log<br/><small>consent ts + version · sources used ·<br/>risk gen ts · rule version ·<br/>report gen/download record</small>"]
+  R-->O1
+  R-->O2
+  R-->O3
+  R-->AUD
+  O2-.records.->AUD
+  classDef eng fill:#1c2742,stroke:#58a6ff,color:#fff;
+  classDef warn fill:#3a2d12,stroke:#d29922,color:#fff;
+  class O1,O2,O3 eng; class AUD warn;
+      </pre></div>
+    </section>
+
+    <!-- 8 -->
+    <section id="scenarios">
+      <h2><span class="num">8</span> Demo Borrower Scenarios</h2>
+      <p class="desc">The three seeded scenarios that demonstrate range — full data, thin file, and low-confidence fallback.</p>
+      <div class="diagram"><pre class="mermaid">
+flowchart TD
+  ROOT(("Demo<br/>Scenarios"))
+  SC1["Scenario 1 — India→US salaried<br/><small>origin-country bureau + verified income<br/>→ lender-readable profile</small>"]
+  SC2["Scenario 2 — Thin-file / self-employed<br/><small>cash-flow, income evidence,<br/>rent/utility supporting data</small>"]
+  SC3["Scenario 3 — Document-supported / limited<br/><small>lower-confidence handling when<br/>open banking / verified sources absent</small>"]
+  R1["→ Low / Moderate band"]
+  R2["→ Moderate / Elevated band"]
+  R3["→ Elevated / Insufficient Data"]
+  ROOT-->SC1-->R1
+  ROOT-->SC2-->R2
+  ROOT-->SC3-->R3
+  classDef root fill:#1c2742,stroke:#58a6ff,color:#fff;
+  classDef sc fill:#10331f,stroke:#3fb950,color:#fff;
+  class SC1,SC2,SC3 sc;
+      </pre></div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  Global Credit Passport · Milestone 1 · Lender-ready pilot demo (not production) ·
+  Stack: Next.js · NestJS · PostgreSQL/Prisma · AWS S3 · PDFKit ·
+  <code>docs/GCP_Milestone1_ClientSandbox_Updated (3).docx</code>
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'dark',
+    securityLevel:'loose',
+    flowchart:{curve:'basis',htmlLabels:true,nodeSpacing:45,rankSpacing:55},
+    themeVariables:{
+      fontFamily:'Segoe UI, sans-serif',
+      lineColor:'#5a6b80',
+      primaryColor:'#1c2742',
+      primaryBorderColor:'#58a6ff',
+      primaryTextColor:'#e6edf3'
+    }
+  });
+</script>
+</body>
+</html>
