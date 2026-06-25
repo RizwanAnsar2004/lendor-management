@@ -37,5 +37,8 @@
     <module>api-gateway</module>
     <module>service-template</module>
     <module>passport-service</module>
+    <module>auth-service</module>
+    <module>borrower-service</module>
+    <module>lender-service</module>
   </modules>
 </project>

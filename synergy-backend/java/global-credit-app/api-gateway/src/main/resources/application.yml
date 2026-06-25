@@ -5,12 +5,43 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8088}
+          predicates:
+            - Path=/auth/**
+
+        - id: passport-service
+          uri: ${PASSPORT_SERVICE_URL:http://localhost:8087}
+          predicates:
+            - Path=/v1/passports/**
+
+        - id: borrower-service
+          uri: ${BORROWER_SERVICE_URL:http://localhost:8089}
+          predicates:
+            - Path=/v1/applications/**
+
+        - id: lender-branding
+          uri: ${BORROWER_SERVICE_URL:http://localhost:8089}
+          predicates:
+            - Path=/v1/lenders/**
+
+        - id: lender-service
+          uri: ${LENDER_SERVICE_URL:http://localhost:8090}
+          predicates:
+            - Path=/v1/lender/**
+
         - id: service-template
           uri: ${SERVICE_TEMPLATE_URL:http://localhost:8081}
           predicates:
-            - Path=/svc-template/** 
+            - Path=/svc-template/**
           filters:
             - StripPrefix=1
+
+gcp:
+  jwt:
+    secret: ${JWT_SECRET:change-me-dev-secret-at-least-32-bytes-long!}
+  security:
+    enforce-jwt: ${ENFORCE_JWT:false}
 
 management:
   endpoints:

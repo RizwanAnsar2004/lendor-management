@@ -1,0 +1,30 @@
+server:
+  port: 8090
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gcp}
+    username: ${DB_USER:gcp}
+    password: ${DB_PASS:gcp}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_schema_history_lender
+
+gcp:
+  storage:
+    local-root: ${DOC_STORAGE_ROOT:./data/uploads}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
