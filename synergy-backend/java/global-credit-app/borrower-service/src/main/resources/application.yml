@@ -17,16 +17,27 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    table: flyway_schema_history_borrower
+    baseline-on-migrate: true
+    baseline-version: 0
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 12MB
 
 gcp:
+  audit:
+    base-url: ${AUDIT_SERVICE_URL:http://localhost:8091}
   storage:
     local-root: ${DOC_STORAGE_ROOT:./data/uploads}
   documents:
     allowed-content-types: application/pdf,image/png,image/jpeg
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    path: /v3/api-docs
 
 management:
   endpoints:

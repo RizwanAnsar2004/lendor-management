@@ -12,9 +12,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>borrower-service</artifactId>
-  <name>borrower-service</name>
-  <description>Borrower intake: loan applications, profiles, and document uploads</description>
+  <artifactId>audit-service</artifactId>
+  <name>audit-service</name>
+  <description>Central domain audit trail for all GCP services</description>
 
   <dependencies>
     <dependency>

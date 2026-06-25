@@ -2,7 +2,9 @@ package com.synergyresources.gcp.lender.service;
 
 import com.synergyresources.gcp.lender.api.Dto;
 import com.synergyresources.gcp.lender.error.LenderException;
-import com.synergyresources.gcp.lender.model.*;
+import com.synergyresources.gcp.lender.model.ApplicationReview;
+import com.synergyresources.gcp.lender.model.LenderMember;
+import com.synergyresources.gcp.lender.model.ReviewNote;
 import com.synergyresources.gcp.lender.model.read.*;
 import com.synergyresources.gcp.lender.repo.*;
 import org.springframework.stereotype.Service;
@@ -158,9 +160,7 @@ public class LenderReviewService {
   public List<Dto.AuditEntry> getAudit(UUID userId, UUID applicationId) {
     UUID lenderId = resolveLenderId(userId);
     requireOwnedApp(applicationId, lenderId);
-    return auditService.listForApplication(applicationId).stream()
-        .map(a -> new Dto.AuditEntry(a.getId(), a.getActorUserId(), a.getAction(), a.getDetail(), a.getCreatedAt()))
-        .collect(Collectors.toList());
+    return auditService.listForApplication(applicationId);
   }
 
   public Dto.MeResponse getMe(UUID userId) {

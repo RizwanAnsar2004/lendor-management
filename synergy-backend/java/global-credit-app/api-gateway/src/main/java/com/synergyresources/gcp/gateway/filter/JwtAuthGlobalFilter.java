@@ -23,7 +23,10 @@ import java.util.List;
 public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
 
   private static final List<String> OPEN_PATHS = List.of(
-      "/auth/", "/health", "/ready", "/v1/lenders/"
+      "/auth/", "/health", "/ready", "/v1/lenders/",
+      "/swagger-ui", "/v3/api-docs", "/webjars/",
+      "/auth-docs/", "/borrower-docs/", "/lender-docs/",
+      "/passport-docs/", "/audit-docs/"
   );
 
   @Value("${gcp.jwt.secret:change-me-dev-secret-at-least-32-bytes-long!}")

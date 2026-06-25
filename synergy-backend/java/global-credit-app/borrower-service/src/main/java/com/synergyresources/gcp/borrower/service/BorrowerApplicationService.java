@@ -20,13 +20,16 @@ public class BorrowerApplicationService {
   private final LoanApplicationRepo appRepo;
   private final BorrowerProfileRepo profileRepo;
   private final ApplicationDocumentRepo docRepo;
+  private final AuditClient auditClient;
 
   public BorrowerApplicationService(LenderRepo lenderRepo, LoanApplicationRepo appRepo,
-                                    BorrowerProfileRepo profileRepo, ApplicationDocumentRepo docRepo) {
+                                    BorrowerProfileRepo profileRepo, ApplicationDocumentRepo docRepo,
+                                    AuditClient auditClient) {
     this.lenderRepo = lenderRepo;
     this.appRepo = appRepo;
     this.profileRepo = profileRepo;
     this.docRepo = docRepo;
+    this.auditClient = auditClient;
   }
 
   public Dto.ApplyResponse apply(UUID userId, Dto.ApplyRequest req) {
@@ -45,6 +48,8 @@ public class BorrowerApplicationService {
     app.setTermMonths(req.getTermMonths());
     appRepo.save(app);
 
+    auditClient.emit(app.getId(), userId, "BORROWER", "APPLICATION_CREATED",
+        "lender=" + req.getLenderSlug());
     return new Dto.ApplyResponse(app.getId(), app.getStatus());
   }
 
@@ -88,6 +93,8 @@ public class BorrowerApplicationService {
     if (req.getSupportingTelecom() != null) profile.setSupportingTelecom(req.getSupportingTelecom());
     profileRepo.save(profile);
 
+    auditClient.emit(applicationId, userId, "BORROWER", "PROFILE_UPDATED", null);
+
     Lender lender = lenderRepo.findById(app.getLenderId())
         .orElseThrow(() -> new BorrowerException(500, "Lender not found"));
     List<ApplicationDocument> docs = docRepo.findByApplicationId(applicationId);
@@ -108,6 +115,8 @@ public class BorrowerApplicationService {
     app.setStatus("SUBMITTED");
     app.setSubmittedAt(OffsetDateTime.now());
     appRepo.save(app);
+
+    auditClient.emit(applicationId, userId, "BORROWER", "APPLICATION_SUBMITTED", null);
     return new Dto.SubmitResponse(app.getId(), app.getStatus(), app.getSubmittedAt());
   }
 

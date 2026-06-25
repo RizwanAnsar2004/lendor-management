@@ -4,6 +4,14 @@ server:
 spring:
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
       routes:
         - id: auth-service
           uri: ${AUTH_SERVICE_URL:http://localhost:8088}
@@ -36,6 +44,57 @@ spring:
             - Path=/svc-template/**
           filters:
             - StripPrefix=1
+
+        # --- api-docs proxy routes (Swagger aggregator) ---
+        - id: auth-docs
+          uri: ${AUTH_SERVICE_URL:http://localhost:8088}
+          predicates:
+            - Path=/auth-docs/**
+          filters:
+            - RewritePath=/auth-docs/(?<remaining>.*), /$\{remaining}
+
+        - id: borrower-docs
+          uri: ${BORROWER_SERVICE_URL:http://localhost:8089}
+          predicates:
+            - Path=/borrower-docs/**
+          filters:
+            - RewritePath=/borrower-docs/(?<remaining>.*), /$\{remaining}
+
+        - id: lender-docs
+          uri: ${LENDER_SERVICE_URL:http://localhost:8090}
+          predicates:
+            - Path=/lender-docs/**
+          filters:
+            - RewritePath=/lender-docs/(?<remaining>.*), /$\{remaining}
+
+        - id: passport-docs
+          uri: ${PASSPORT_SERVICE_URL:http://localhost:8087}
+          predicates:
+            - Path=/passport-docs/**
+          filters:
+            - RewritePath=/passport-docs/(?<remaining>.*), /$\{remaining}
+
+        - id: audit-docs
+          uri: ${AUDIT_SERVICE_URL:http://localhost:8091}
+          predicates:
+            - Path=/audit-docs/**
+          filters:
+            - RewritePath=/audit-docs/(?<remaining>.*), /$\{remaining}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth-service
+        url: /auth-docs/v3/api-docs
+      - name: borrower-service
+        url: /borrower-docs/v3/api-docs
+      - name: lender-service
+        url: /lender-docs/v3/api-docs
+      - name: passport-service
+        url: /passport-docs/v3/api-docs
+      - name: audit-service
+        url: /audit-docs/v3/api-docs
 
 gcp:
   jwt:

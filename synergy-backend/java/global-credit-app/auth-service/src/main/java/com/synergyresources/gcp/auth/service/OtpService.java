@@ -19,13 +19,15 @@ public class OtpService {
   private final PasswordEncoder encoder;
   private final MailService mailService;
   private final AuthProperties props;
+  private final AuditClient auditClient;
 
   public OtpService(OtpVerificationRepo repo, PasswordEncoder encoder,
-                    MailService mailService, AuthProperties props) {
+                    MailService mailService, AuthProperties props, AuditClient auditClient) {
     this.repo = repo;
     this.encoder = encoder;
     this.mailService = mailService;
     this.props = props;
+    this.auditClient = auditClient;
   }
 
   @Transactional
@@ -42,6 +44,7 @@ public class OtpService {
     repo.save(otp);
 
     mailService.sendOtp(email, plain);
+    auditClient.emit(null, null, null, "OTP_REQUESTED", "email=" + email.toLowerCase());
   }
 
   @Transactional
@@ -53,7 +56,7 @@ public class OtpService {
       throw new AuthException("OTP already used", 400);
     }
     if (otp.isVerified()) {
-      return; // already verified, idempotent
+      return;
     }
     if (Instant.now().isAfter(otp.getExpiresAt())) {
       throw new AuthException("OTP has expired", 400);
@@ -72,6 +75,7 @@ public class OtpService {
 
     otp.setVerified(true);
     repo.save(otp);
+    auditClient.emit(null, null, null, "OTP_VERIFIED", "email=" + email.toLowerCase());
   }
 
   @Transactional

@@ -40,5 +40,6 @@
     <module>auth-service</module>
     <module>borrower-service</module>
     <module>lender-service</module>
+    <module>audit-service</module>
   </modules>
 </project>

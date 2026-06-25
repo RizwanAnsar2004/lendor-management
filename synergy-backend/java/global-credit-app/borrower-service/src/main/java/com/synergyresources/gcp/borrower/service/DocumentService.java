@@ -23,15 +23,18 @@ public class DocumentService {
   private final LoanApplicationRepo appRepo;
   private final ApplicationDocumentRepo docRepo;
   private final DocumentStorageService storageService;
+  private final AuditClient auditClient;
   private final List<String> allowedTypes;
 
   private static final long MAX_BYTES = 10L * 1024 * 1024;
 
   public DocumentService(LoanApplicationRepo appRepo, ApplicationDocumentRepo docRepo,
-                         DocumentStorageService storageService, BorrowerProperties props) {
+                         DocumentStorageService storageService, BorrowerProperties props,
+                         AuditClient auditClient) {
     this.appRepo = appRepo;
     this.docRepo = docRepo;
     this.storageService = storageService;
+    this.auditClient = auditClient;
     this.allowedTypes = props.getDocuments().getAllowedContentTypesList();
   }
 
@@ -64,6 +67,8 @@ public class DocumentService {
     doc.setSizeBytes(file.getSize());
     docRepo.save(doc);
 
+    auditClient.emit(applicationId, userId, "BORROWER", "DOCUMENT_UPLOADED",
+        "docType=" + docType);
     return new Dto.DocumentResponse(doc.getId(), doc.getDocType(), doc.getTag(),
         doc.getOriginalFilename(), doc.getContentType(), doc.getSizeBytes(), doc.getCreatedAt());
   }

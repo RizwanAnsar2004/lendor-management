@@ -11,6 +11,19 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+    table: flyway_schema_history_passport
+    baseline-on-migrate: true
+    baseline-version: 0
+
+gcp:
+  audit:
+    base-url: ${AUDIT_SERVICE_URL:http://localhost:8091}
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    path: /v3/api-docs
 
 management:
   endpoints:

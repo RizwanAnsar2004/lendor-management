@@ -13,10 +13,13 @@ import java.util.UUID;
 public class PassportService {
   private final PassportRepo passportRepo;
   private final PassportSourceRepo sourceRepo;
+  private final AuditClient auditClient;
 
-  public PassportService(PassportRepo passportRepo, PassportSourceRepo sourceRepo) {
+  public PassportService(PassportRepo passportRepo, PassportSourceRepo sourceRepo,
+                         AuditClient auditClient) {
     this.passportRepo = passportRepo;
     this.sourceRepo = sourceRepo;
+    this.auditClient = auditClient;
   }
 
   @Transactional
@@ -30,6 +33,8 @@ public class PassportService {
     p.setDob(req.dob);
     p.setStatus("IN_PROGRESS");
     passportRepo.save(p);
+
+    auditClient.emit(p.getId(), userId, "BORROWER", "PASSPORT_INIT", null);
     return new Dto.InitResponse(p.getId(), p.getStatus());
   }
 
@@ -47,6 +52,9 @@ public class PassportService {
     }
     p.setStatus("IN_PROGRESS");
     passportRepo.save(p);
+
+    auditClient.emit(passportId, userId, "BORROWER", "SOURCES_CONNECTED",
+        "count=" + req.sources.size());
   }
 
   @Transactional
@@ -55,5 +63,7 @@ public class PassportService {
       .orElseThrow(() -> new IllegalArgumentException("Passport not found"));
     p.setStatus("ACTIVE");
     passportRepo.save(p);
+
+    auditClient.emit(passportId, userId, "BORROWER", "PASSPORT_GENERATED", null);
   }
 }
