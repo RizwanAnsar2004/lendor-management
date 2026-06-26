@@ -1,58 +1,89 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { verifySignUp } from "../auth/auth";
-import OtpInput from "../components/OtpInput";
+import { useRef, useState } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { api } from '../lib/api';
 
 export default function Verify() {
   const nav = useNavigate();
-  const username = sessionStorage.getItem("gcp.username") || "";
-  const idType = sessionStorage.getItem("gcp.idType") || "email";
+  const [params] = useSearchParams();
+  const email = params.get('email') ?? '';
 
-  const [code, setCode] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+  const [digits, setDigits] = useState(['', '', '', '', '', '']);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resent, setResent] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  async function onVerify() {
-    setErr(null);
-    if (code.length !== 6) return setErr("Enter the 6-digit code.");
+  function handleChange(i: number, val: string) {
+    const d = val.replace(/\D/g, '').slice(-1);
+    const next = [...digits];
+    next[i] = d;
+    setDigits(next);
+    if (d && i < 5) inputRefs.current[i + 1]?.focus();
+  }
 
+  function handleKeyDown(i: number, e: React.KeyboardEvent) {
+    if (e.key === 'Backspace' && !digits[i] && i > 0) inputRefs.current[i - 1]?.focus();
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const code = digits.join('');
+    if (code.length < 6) return setError('Enter all 6 digits.');
+    setError('');
+    setLoading(true);
     try {
-      setLoading(true);
-      await verifySignUp(username, code);
-      nav("/create-password");
-    } catch (e: any) {
-      setErr(e?.message ?? "Verification failed.");
+      await api.post('/auth/otp/verify', { email, code }, { skipAuth: true });
+      nav(`/register?email=${encodeURIComponent(email)}`);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function resend() {
+    try {
+      await api.post('/auth/otp/request', { email }, { skipAuth: true });
+      setResent(true);
+      setTimeout(() => setResent(false), 3000);
+    } catch {
+      // ignore
     }
   }
 
   return (
     <div className="page-bg">
       <div className="card">
-        <div className="card-header">Verify Your {idType === "phone" ? "Phone" : "Email"}</div>
+        <div className="card-header">Check your email</div>
         <div className="card-body">
-          <Link to="/get-started" className="back">← Back</Link>
-
-          <div className="hint">
-            Enter the 6-digit code sent to your {idType === "phone" ? "number" : "email"}.
-          </div>
-
-          <div className="otp">
-            <OtpInput length={6} value={code} onChange={setCode} autoFocus />
-          </div>
-
-          {err && <div style={{ color: "#b00020", fontSize: 13, marginTop: 8 }}>{err}</div>}
-
-          <button className="btn" onClick={onVerify} disabled={loading}>
-            {loading ? "Verifying..." : "Continue"}
-          </button>
-
-          <div className="footer" style={{ marginTop: 16 }}>
-            Didn’t receive the code?{" "}
-            <a className="link" href="#" onClick={(e) => e.preventDefault()}>
-              Resend Code
-            </a>
+          <p className="hint">We sent a 6-digit code to <strong>{email}</strong></p>
+          <form onSubmit={submit}>
+            <div className="otp">
+              {digits.map((d, i) => (
+                <input
+                  key={i}
+                  ref={el => { inputRefs.current[i] = el; }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={d}
+                  onChange={e => handleChange(i, e.target.value)}
+                  onKeyDown={e => handleKeyDown(i, e)}
+                  autoFocus={i === 0}
+                />
+              ))}
+            </div>
+            {error && <p style={{ color: 'red', fontSize: 13, marginTop: 4 }}>{error}</p>}
+            {resent && <p style={{ color: 'green', fontSize: 13, marginTop: 4 }}>Code resent!</p>}
+            <button className="btn" type="submit" disabled={loading}>
+              {loading ? 'Verifying…' : 'Verify'}
+            </button>
+          </form>
+          <div className="footer">
+            Didn't receive it?{' '}
+            <span className="link" style={{ cursor: 'pointer' }} onClick={resend}>Resend</span>
+            {' · '}
+            <Link className="link" to="/get-started">Change email</Link>
           </div>
         </div>
       </div>

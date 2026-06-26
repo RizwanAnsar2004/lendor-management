@@ -20,7 +20,7 @@ public class LocalDocumentStorageService implements DocumentStorageService {
 
   @Override
   public Resource load(String storedPath) throws IOException {
-    var path = Paths.get(localRoot, storedPath);
+    var path = Paths.get(localRoot, storedPath).toAbsolutePath().normalize();
     if (!Files.exists(path)) throw new IOException("File not found: " + storedPath);
     return new FileSystemResource(path);
   }

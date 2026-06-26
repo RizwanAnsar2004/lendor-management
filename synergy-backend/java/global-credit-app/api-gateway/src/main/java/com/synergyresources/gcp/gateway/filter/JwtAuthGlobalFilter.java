@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.springframework.http.HttpMethod;
 
 @Component
 public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
@@ -41,6 +42,10 @@ public class JwtAuthGlobalFilter implements GlobalFilter, Ordered {
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
     if (!enforceJwt) {
+      return chain.filter(exchange);
+    }
+
+    if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
       return chain.filter(exchange);
     }
 

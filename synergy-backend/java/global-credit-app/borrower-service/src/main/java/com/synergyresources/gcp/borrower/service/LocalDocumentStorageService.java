@@ -26,7 +26,7 @@ public class LocalDocumentStorageService implements DocumentStorageService {
     String safeFilename = Paths.get(file.getOriginalFilename()).getFileName().toString()
         .replaceAll("[^a-zA-Z0-9._-]", "_");
     String key = "documents/" + userId + "/" + applicationId + "/" + UUID.randomUUID() + "_" + safeFilename;
-    Path target = Paths.get(localRoot, key);
+    Path target = Paths.get(localRoot, key).toAbsolutePath().normalize();
     Files.createDirectories(target.getParent());
     file.transferTo(target.toFile());
     return key;
@@ -34,7 +34,7 @@ public class LocalDocumentStorageService implements DocumentStorageService {
 
   @Override
   public Resource load(String storedPath) throws IOException {
-    Path path = Paths.get(localRoot, storedPath);
+    Path path = Paths.get(localRoot, storedPath).toAbsolutePath().normalize();
     if (!Files.exists(path)) {
       throw new IOException("File not found: " + storedPath);
     }

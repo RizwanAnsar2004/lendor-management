@@ -1,32 +1,46 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { login } from "../auth/auth";
+import { useState } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { api } from '../lib/api';
+import { saveAuth } from '../lib/token';
+
+interface LoginResponse {
+  accessToken: string;
+}
+
+function decodeJwt(token: string): Record<string, unknown> {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+  } catch {
+    return {};
+  }
+}
 
 export default function Login() {
   const nav = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [err, setErr] = useState<string|null>(null);
+  const [params] = useSearchParams();
+  const hint = params.get('hint') ?? '';
+
+  const [email, setEmail] = useState(hint);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function onLogin() {
-    setErr(null);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
     try {
-      setLoading(true);
-      await login(username.trim(), password);
-
-      // 🔥 Route based on purpose + passport initialization
-      const purpose = localStorage.getItem("gcp.purpose");
-      const initRaw = localStorage.getItem("gcp.passportInit");
-      const init = initRaw ? JSON.parse(initRaw) : null;
-      const isComplete = init?.status === "complete";
-
-      if (!purpose) nav("/purpose");
-      else if (!isComplete) nav("/passport-init");
-      else nav("/dashboard");
-
-    } catch (e:any) {
-      setErr(e?.message ?? "Login failed");
+      const res = await api.post<LoginResponse>('/auth/login', { email, password }, { skipAuth: true });
+      const claims = decodeJwt(res.accessToken);
+      const role = (claims.role ?? claims.roles ?? claims.authorities ?? 'BORROWER') as string;
+      const userId = (claims.sub ?? claims.userId ?? '') as string;
+      saveAuth(res.accessToken, Array.isArray(role) ? role[0] : role, userId);
+      const effectiveRole = Array.isArray(role) ? role[0] : role;
+      if (effectiveRole === 'LENDER') nav('/lender/dashboard');
+      else nav('/borrower/dashboard');
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -35,36 +49,35 @@ export default function Login() {
   return (
     <div className="page-bg">
       <div className="card">
-        <div className="card-header">Log in</div>
+        <div className="card-header">Sign in</div>
         <div className="card-body">
-          <div className="label">Email or Phone</div>
-          <input
-            className="input"
-            value={username}
-            onChange={(e)=>setUsername(e.target.value)}
-            placeholder="Email or +E.164 phone"
-          />
-
-          <div className="label">Password</div>
-          <input
-            className="input"
-            type="password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            placeholder="Password"
-          />
-
-          {err && <div style={{ color: "#b00020", fontSize: 13, marginTop: 10 }}>{err}</div>}
-
-          <button className="btn" onClick={onLogin} disabled={loading}>
-            {loading ? "Signing in..." : "Continue"}
-          </button>
-
-          <div className="footer">
-            <Link className="link" to="/reset-password">Forgot password?</Link>
-          </div>
-          <div className="footer">
-            New here? <Link className="link" to="/get-started">Create account</Link>
+          <form onSubmit={submit}>
+            <div className="label">Email</div>
+            <input
+              className="input"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+            <div className="label">Password</div>
+            <input
+              className="input"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+            {error && <p style={{ color: 'red', fontSize: 13, marginTop: 8 }}>{error}</p>}
+            <button className="btn" type="submit" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+          <div className="footer" style={{ marginTop: 10 }}>
+            New here?{' '}
+            <Link className="link" to="/get-started">Create account</Link>
           </div>
         </div>
       </div>

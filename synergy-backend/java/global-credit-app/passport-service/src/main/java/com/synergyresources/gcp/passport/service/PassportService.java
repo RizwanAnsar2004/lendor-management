@@ -1,6 +1,7 @@
 package com.synergyresources.gcp.passport.service;
 
 import com.synergyresources.gcp.passport.api.Dto;
+import com.synergyresources.gcp.passport.error.PassportException;
 import com.synergyresources.gcp.passport.model.Passport;
 import com.synergyresources.gcp.passport.model.PassportSource;
 import com.synergyresources.gcp.passport.repo.PassportRepo;
@@ -41,7 +42,7 @@ public class PassportService {
   @Transactional
   public void connectSources(UUID userId, UUID passportId, Dto.SourceConnectRequest req) {
     Passport p = passportRepo.findByIdAndUserId(passportId, userId)
-      .orElseThrow(() -> new IllegalArgumentException("Passport not found"));
+      .orElseThrow(() -> new PassportException(404, "Passport not found"));
 
     for (String s : req.sources) {
       PassportSource ps = new PassportSource();
@@ -60,7 +61,7 @@ public class PassportService {
   @Transactional
   public void generate(UUID userId, UUID passportId) {
     Passport p = passportRepo.findByIdAndUserId(passportId, userId)
-      .orElseThrow(() -> new IllegalArgumentException("Passport not found"));
+      .orElseThrow(() -> new PassportException(404, "Passport not found"));
     p.setStatus("ACTIVE");
     passportRepo.save(p);
 

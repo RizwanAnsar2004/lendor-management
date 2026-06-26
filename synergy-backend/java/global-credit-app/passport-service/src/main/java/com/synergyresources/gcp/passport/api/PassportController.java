@@ -2,6 +2,7 @@ package com.synergyresources.gcp.passport.api;
 
 import com.synergyresources.gcp.passport.service.PassportService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ public class PassportController {
   }
 
   @PostMapping("/{passportId}/sources")
+  @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.NO_CONTENT)
   public void sources(
       @RequestHeader(value = "X-User-Id", required = false) String xUserId,
       @PathVariable UUID passportId,
@@ -38,6 +40,7 @@ public class PassportController {
   }
 
   @PostMapping("/{passportId}/generate")
+  @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.NO_CONTENT)
   public void generate(
       @RequestHeader(value = "X-User-Id", required = false) String xUserId,
       @PathVariable UUID passportId) {

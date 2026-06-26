@@ -3,6 +3,8 @@ package com.synergyresources.gcp.auth.service;
 import com.synergyresources.gcp.auth.config.AuthProperties;
 import com.synergyresources.gcp.auth.model.OtpVerification;
 import com.synergyresources.gcp.auth.repo.OtpVerificationRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import java.time.Instant;
 @Service
 public class OtpService {
 
+  private static final Logger log = LoggerFactory.getLogger(OtpService.class);
   private static final SecureRandom RNG = new SecureRandom();
 
   private final OtpVerificationRepo repo;
@@ -43,7 +46,12 @@ public class OtpService {
     otp.setConsumed(false);
     repo.save(otp);
 
-    mailService.sendOtp(email, plain);
+    try {
+      mailService.sendOtp(email, plain);
+    } catch (Exception e) {
+      // No SMTP in local dev — log code so testers can proceed without real email
+      log.warn("OTP mail send failed (no SMTP configured). DEV CODE for {}: {}", email.toLowerCase(), plain);
+    }
     auditClient.emit(null, null, null, "OTP_REQUESTED", "email=" + email.toLowerCase());
   }
 

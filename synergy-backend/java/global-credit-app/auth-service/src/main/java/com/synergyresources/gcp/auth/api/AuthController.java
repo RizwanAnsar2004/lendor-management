@@ -41,7 +41,8 @@ public class AuthController {
   }
 
   @GetMapping("/me")
-  public ResponseEntity<Dto.MeResponse> me(@RequestHeader("Authorization") String authorization) {
+  public ResponseEntity<Dto.MeResponse> me(
+      @RequestHeader(value = "Authorization", required = false) String authorization) {
     return ResponseEntity.ok(authService.me(authorization));
   }
 }

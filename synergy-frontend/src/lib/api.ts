@@ -1,26 +1,57 @@
-import { getIdToken } from "./auth";
+import { getToken, clearAuth } from './token';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL as string;
+export const BASE = 'http://localhost:8080';
 
-export async function apiGet(path: string) {
-  const token = await getIdToken();
+type FetchOptions = RequestInit & { skipAuth?: boolean };
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
+async function request<T>(path: string, opts: FetchOptions = {}): Promise<T> {
+  const { skipAuth, ...init } = opts;
+  const headers: Record<string, string> = {
+    ...(init.body && !(init.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
+    ...(init.headers as Record<string, string> ?? {}),
+  };
 
-  const text = await res.text();
+  if (!skipAuth) {
+    const token = getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE}${path}`, { ...init, headers });
+
+  if (res.status === 401) {
+    clearAuth();
+    window.location.href = '/login';
+    throw new Error('Unauthorized');
+  }
+
   if (!res.ok) {
-    throw new Error(`HTTP ${res.status}: ${text}`);
+    let body: { error?: string; message?: string; fields?: Record<string, string> } = {};
+    try { body = await res.json(); } catch { /* ignore */ }
+    const err: Error & { status?: number; fields?: Record<string, string> } = new Error(
+      body.error ?? body.message ?? `HTTP ${res.status}`
+    );
+    err.status = res.status;
+    err.fields = body.fields;
+    throw err;
   }
 
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
 }
+
+export const api = {
+  get: <T>(path: string, opts?: FetchOptions) =>
+    request<T>(path, { method: 'GET', ...opts }),
+  post: <T>(path: string, body?: unknown, opts?: FetchOptions) =>
+    request<T>(path, {
+      method: 'POST',
+      body: body instanceof FormData ? body : JSON.stringify(body),
+      ...opts,
+    }),
+  put: <T>(path: string, body?: unknown, opts?: FetchOptions) =>
+    request<T>(path, {
+      method: 'PUT',
+      body: body instanceof FormData ? body : JSON.stringify(body),
+      ...opts,
+    }),
+};

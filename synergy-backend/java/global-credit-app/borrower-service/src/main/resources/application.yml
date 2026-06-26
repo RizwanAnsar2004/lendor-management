@@ -29,7 +29,7 @@ gcp:
   audit:
     base-url: ${AUDIT_SERVICE_URL:http://localhost:8091}
   storage:
-    local-root: ${DOC_STORAGE_ROOT:./data/uploads}
+    local-root: ${DOC_STORAGE_ROOT:${user.home}/gcp-uploads}
   documents:
     allowed-content-types: application/pdf,image/png,image/jpeg
 

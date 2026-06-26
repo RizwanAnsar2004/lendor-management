@@ -74,6 +74,7 @@ public class AuthService {
   }
 
   public Dto.MeResponse me(String bearerToken) {
+    if (bearerToken == null || bearerToken.isBlank()) throw new AuthException("Authorization header required.", 401);
     String token = bearerToken.startsWith("Bearer ") ? bearerToken.substring(7) : bearerToken;
     Claims claims = jwtService.parse(token);
 

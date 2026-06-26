@@ -100,7 +100,7 @@ gcp:
   jwt:
     secret: ${JWT_SECRET:change-me-dev-secret-at-least-32-bytes-long!}
   security:
-    enforce-jwt: ${ENFORCE_JWT:false}
+    enforce-jwt: ${ENFORCE_JWT:true}
 
 management:
   endpoints:
